@@ -1,0 +1,213 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Fund Portal</title>
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/5.0.0/mdb.min.css"
+      rel="stylesheet"
+    />
+    <!-- Custom -->
+    <link href="./style.css" rel="stylesheet" />
+  </head>
+
+  <body class="bg-black">
+    <header id="header" class="mb-4">
+      <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">The Fund Portal</a>
+          <div class="d-flex input-group w-auto">
+            <button id="connectButton" class="btn btn-primary">
+              Connect To Wallet
+            </button>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container my-5">
+      <div class="form-section flex-fill">
+        <form id="form" method="POST">
+          <div class="card bg-dark">
+            <ul id="nav" class="nav nav-fill">
+              <li class="nav-item" role="presentation">
+                <a
+                  class="nav-link active tab-left-radius"
+                  aria-current="true"
+                  id="fund-tab"
+                  data-mdb-toggle="tab"
+                  href="#fund-tabs"
+                  aria-controls="fund-tabs"
+                  aria-selected="true"
+                >
+                  <i class="fas fa-exchange-alt me-2"></i>
+                  Fund
+                </a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a
+                  class="nav-link tab-right-radius"
+                  aria-current="true"
+                  id="receive-tab"
+                  data-mdb-toggle="tab"
+                  href="#receive-tabs"
+                  aria-controls="receive-tabs"
+                  aria-selected="false"
+                >
+                  <i class="fas fa-satellite-dish me-2"></i>
+                  Withdraw
+                </a>
+              </li>
+            </ul>
+
+            <div class="card-body">
+              <div class="tab-content">
+                <div
+                  class="tab-pane fade show active"
+                  id="fund-tabs"
+                  role="tabpanel"
+                  aria-labelledby="fund-tab"
+                >
+                  <div class="text-center mb-2">
+                    <small class="text-white fst-italic"
+                      >Minimum Amount to Fund: $5 USD
+                    </small>
+                  </div>
+
+                  <div class="position-relative position-relative-example">
+                    <div
+                      id="amount-box"
+                      class="bg-black p-3 mb-3 rounded-4 border"
+                    >
+                      <div class="d-flex justify-content-between">
+                        <small class="text-muted">Amount</small>
+                        <small class="text-muted"
+                          >Balance:
+                          <span id="ethBalanceText">0</span> ETH</small
+                        >
+                      </div>
+                      <div class="d-flex align-items-center">
+                        <img
+                          src="./assets/eth-icon.png"
+                          height="32"
+                          width="32"
+                        />
+                        <input
+                          name="input-amount"
+                          id="input-amount"
+                          class="form-control form-control-lg border-0"
+                          placeholder="0.0"
+                          required
+                          pattern="(0|[1-9]\d*)(\.\d+)?"
+                        />
+                      </div>
+                    </div>
+                    <div
+                      class="position-absolute top-100 start-50 translate-middle"
+                    >
+                      <div
+                        class="bg-black p-3 rounded-circle border border-2 grey-border"
+                      >
+                        <i class="fas fa-arrow-down text-white px-1"></i>
+                      </div>
+                    </div>
+                  </div>
+
+                  <br />
+                  <div class="d-grid gap-2">
+                    <button
+                      id="fundButton"
+                      class="btn btn-primary rounded-5 block shadow-0"
+                      disabled
+                    >
+                      Fund ETH
+                    </button>
+                    <div id="fundLoader" class="text-center d-none">
+                      <div
+                        class="text-center spinner-border text-primary"
+                        role="status"
+                      >
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="tab-pane fade"
+                  id="receive-tabs"
+                  role="tabpanel"
+                  aria-labelledby="receive-tab"
+                >
+                  <div class="text-center text-white">
+                    <h4>Contract Balance</h4>
+                    <h6><span id="contractBalanceText">0</span> ETH</h6>
+                    <br />
+                    <div class="d-grid gap-2">
+                      <button
+                        id="withdrawButton"
+                        class="btn btn-primary rounded-5 block shadow-0"
+                        disabled
+                      >
+                        Withdraw ETH
+                      </button>
+                      <div id="withdrawLoader" class="text-center d-none">
+                        <div
+                          class="text-center spinner-border text-primary"
+                          role="status"
+                        >
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div class="px-3">
+          <div class="d-flex justify-content-between">
+            <small>Exchange Rate:</small>
+            <small class="text-white">
+              1 ETH = <span id="ethPriceText">2190.29</span> USDT
+            </small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small>Estimated Fees:</small>
+            <small class="text-white"
+              ><span id="estimationText">0</span> ETH</small
+            >
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/5.0.0/mdb.min.js"
+    ></script>
+    <script type="module" src="./index.js"></script>
+    <script>
+      async function loadETHPrice() {
+        const burl = "https://api.binance.com/api/v3/ticker/price?symbol=";
+        const symbol = "ETHUSDT";
+        const url = burl + symbol;
+        const res = await fetch(url);
+        const { price } = await res.json();
+        document.getElementById("ethPriceText").innerHTML = price;
+      }
+      loadETHPrice();
+    </script>
+  </body>
+</html>

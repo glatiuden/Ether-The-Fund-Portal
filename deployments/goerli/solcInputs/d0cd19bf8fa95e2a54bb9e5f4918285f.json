@@ -1,0 +1,41 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ninterface AggregatorV3Interface {\n  function decimals() external view returns (uint8);\n\n  function description() external view returns (string memory);\n\n  function version() external view returns (uint256);\n\n  function getRoundData(uint80 _roundId)\n    external\n    view\n    returns (\n      uint80 roundId,\n      int256 answer,\n      uint256 startedAt,\n      uint256 updatedAt,\n      uint80 answeredInRound\n    );\n\n  function latestRoundData()\n    external\n    view\n    returns (\n      uint80 roundId,\n      int256 answer,\n      uint256 startedAt,\n      uint256 updatedAt,\n      uint80 answeredInRound\n    );\n}\n"
+    },
+    "contracts/FundMe.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.8;\n\nimport \"./PriceConverter.sol\";\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\n\nerror FundMe__NotOwner();\n\n/**\n *  @title A contract for crowd funding\n *  @notice This contract is to demo a sample funding contract\n *  @dev This implements price feeds as our library\n */\ncontract FundMe {\n\tusing PriceConverter for uint256;\n\n\t// Public State Variables\n\tuint256 public constant MINIMUM_USD = 5 * 10**18;\n\n\t// Private State Variables\n\tAggregatorV3Interface private s_priceFeed;\n\taddress[] private s_funders;\n\taddress private immutable i_owner;\n\tmapping(address => uint256) private s_addressToAmountFunded;\n\n\tmodifier onlyOwner() {\n\t\t// require(msg.sender == owner);\n\t\tif (msg.sender != i_owner) revert FundMe__NotOwner();\n\t\t_;\n\t}\n\n\tconstructor(address priceFeedAddress) {\n\t\ti_owner = msg.sender;\n\t\ts_priceFeed = AggregatorV3Interface(priceFeedAddress);\n\t}\n\n\tfallback() external payable {\n\t\tfund();\n\t}\n\n\treceive() external payable {\n\t\tfund();\n\t}\n\n\t/**\n\t *  @notice This function funds this contract\n\t */\n\tfunction fund() public payable {\n\t\trequire(\n\t\t\tmsg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,\n\t\t\t\"You need to spend more ETH!\"\n\t\t);\n\t\ts_addressToAmountFunded[msg.sender] += msg.value;\n\t\ts_funders.push(msg.sender);\n\t}\n\n\t/**\n\t *  @notice This function withdraw funds\n\t */\n\tfunction withdraw() public onlyOwner {\n\t\tfor (\n\t\t\tuint256 funderIndex = 0;\n\t\t\tfunderIndex < s_funders.length;\n\t\t\tfunderIndex++\n\t\t) {\n\t\t\taddress funder = s_funders[funderIndex];\n\t\t\ts_addressToAmountFunded[funder] = 0;\n\t\t}\n\n\t\ts_funders = new address[](0);\n\n\t\t// method 1: transfer\n\t\t// payable(msg.sender).transfer(address(this).balance);\n\n\t\t// method 2: send\n\t\t// bool sendSuccess = payable(msg.sender).send(address(this).balance);\n\t\t// require(sendSuccess, \"Send failed\");\n\n\t\t// method 3 (preferred): call\n\t\t(bool callSuccess, ) = payable(msg.sender).call{\n\t\t\tvalue: address(this).balance\n\t\t}(\"\");\n\t\trequire(callSuccess, \"Call failed\");\n\t}\n\n\t/**\n\t *  @notice This function withdraw funds (cheaper) as it loads funders into the memory\n\t */\n\tfunction cheaperWithdraw() public payable onlyOwner {\n\t\taddress[] memory funders = s_funders;\n\t\tfor (\n\t\t\tuint256 funderIndex = 0;\n\t\t\tfunderIndex < funders.length;\n\t\t\tfunderIndex++\n\t\t) {\n\t\t\taddress funder = funders[funderIndex];\n\t\t\ts_addressToAmountFunded[funder] = 0;\n\t\t}\n\t\ts_funders = new address[](0);\n\t\t(bool callSuccess, ) = payable(msg.sender).call{\n\t\t\tvalue: address(this).balance\n\t\t}(\"\");\n\t\trequire(callSuccess, \"Call failed\");\n\t}\n\n\t/**\n\t *  @notice This function is a getter of the owner address\n\t */\n\tfunction getOwner() public view returns (address) {\n\t\treturn i_owner;\n\t}\n\n\t/**\n\t *  @notice This function is a getter of the funder address\n\t *  @param index The index of the funder\n\t *  @return address The address of the funder\n\t */\n\tfunction getFunder(uint256 index) public view returns (address) {\n\t\treturn s_funders[index];\n\t}\n\n\t/**\n\t *  @notice This function returns the amount funded by an address\n\t *  @param funder The address of the funder\n\t *  @return uint256 The amount funded by the funder\n\t */\n\tfunction getAddressToAmountFunded(address funder)\n\t\tpublic\n\t\tview\n\t\treturns (uint256)\n\t{\n\t\treturn s_addressToAmountFunded[funder];\n\t}\n\n\t/**\n\t *  @notice This function returns the price feed used in the contract\n\t *  @return AggregatorV3Interface The price feed used in the contract\n\t */\n\tfunction getPriceFeed() public view returns (AggregatorV3Interface) {\n\t\treturn s_priceFeed;\n\t}\n}\n"
+    },
+    "contracts/PriceConverter.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.8;\n\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\n\nlibrary PriceConverter {\n\t// We could make this public, but then we'd have to deploy it\n\tfunction getPrice(AggregatorV3Interface priceFeed)\n\t\tinternal\n\t\tview\n\t\treturns (uint256)\n\t{\n\t\t// Goerli ETH / USD Address\n\t\t// https://docs.chain.link/docs/ethereum-addresses/\n\t\t// AggregatorV3Interface priceFeed = AggregatorV3Interface(\n\t\t//     0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e\n\t\t// );\n\n\t\t(, int256 answer, , , ) = priceFeed.latestRoundData();\n\t\t// ETH/USD rate in 18 digit\n\t\treturn uint256(answer * 10000000000);\n\t\t// or (Both will do the same thing)\n\t\t// return uint256(answer * 1e10); // 1* 10 ** 10 == 10000000000\n\t}\n\n\t// 1000000000\n\tfunction getConversionRate(\n\t\tuint256 ethAmount,\n\t\tAggregatorV3Interface priceFeed\n\t) internal view returns (uint256) {\n\t\tuint256 ethPrice = getPrice(priceFeed);\n\t\tuint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;\n\t\t// or (Both will do the same thing)\n\t\t// uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1e18; // 1 * 10 ** 18 == 1000000000000000000\n\t\t// the actual ETH/USD conversion rate, after adjusting the extra 0s.\n\t\treturn ethAmountInUsd;\n\t}\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}

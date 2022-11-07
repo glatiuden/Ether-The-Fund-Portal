@@ -114,6 +114,7 @@ async function fund(event) {
     return;
   }
 
+  const provider = getProvider();
   const contract = getContract();
   const fundButton = document.getElementById("fundButton");
   const fundLoader = document.getElementById("fundLoader");
@@ -144,6 +145,7 @@ async function withdraw() {
     return;
   }
 
+  const provider = getProvider();
   const contract = getContract();
   const withdrawButton = document.getElementById("withdrawButton");
   const withdrawLoader = document.getElementById("withdrawLoader");

@@ -144,16 +144,12 @@ async function withdraw() {
     return;
   }
 
-  const provider = getProvider();
-  const signer = provider.getSigner(); // whichever wallet that is connected to the metamask
   const contract = getContract();
-
   const withdrawButton = document.getElementById("withdrawButton");
   const withdrawLoader = document.getElementById("withdrawLoader");
 
   try {
     console.log(`Withdrawing ETH...`);
-
     withdrawButton.classList.add("d-none");
     withdrawLoader.classList.remove("d-none");
     const transactionResponse = await contract.withdraw();
@@ -170,11 +166,10 @@ async function withdraw() {
 
 async function getGasEstimation() {
   const provider = getProvider();
-  const signer = provider.getSigner();
+  const contract = getContract();
 
   try {
     const gasPrice = await provider.getGasPrice();
-    const contract = getContract();
     const functionGasFeesForFund = await contract.estimateGas.fund({
       value: ethers.utils.parseEther("0.1"),
     });

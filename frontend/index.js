@@ -9,9 +9,18 @@ connectButton.onclick = connect;
 withdrawButton.onclick = withdraw;
 form.onsubmit = fund;
 
+let accountAddress;
+
 function getProvider() {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   return provider;
+}
+
+function getContract() {
+  const provider = getProvider();
+  const signer = provider.getSigner();
+  const contract = new ethers.Contract(contractAddress, abi, signer);
+  return contract;
 }
 
 function getEthereum() {
@@ -32,32 +41,46 @@ async function connect() {
   try {
     await ethereum.request({ method: "eth_requestAccounts" });
     document.getElementById("connectButton").innerHTML = "Connected";
-    await Promise.all([
-      getBalance(),
-      getCurrentUserBalance(),
-      getGasEstimation(),
-    ]);
+    const accounts = await ethereum.request({
+      method: "eth_accounts",
+    });
+    accountAddress = accounts[0];
+    await Promise.all([...getCurrentUserBalances(), getGasEstimation()]);
   } catch (error) {
     console.error(error);
   }
 }
 
+function getCurrentUserBalances() {
+  return [getCurrentUserBalance(), getCurrentUserWithdrawalBalance()];
+}
+
 async function getCurrentUserBalance() {
-  const ethereum = getEthereum();
   try {
-    const accounts = await ethereum.request({
-      method: "eth_accounts",
-    });
-    const account = accounts[0];
     const provider = getProvider();
-    const balance = await provider.getBalance(account);
+    const balance = await provider.getBalance(accountAddress);
     const balanceInETH = ethers.utils.formatEther(balance);
     document.getElementById("ethBalanceText").innerHTML = balanceInETH;
-
     if (balanceInETH > 0) {
       document.getElementById("fundButton").removeAttribute("disabled");
     } else {
       document.getElementById("fundButton").setAttribute("disabled", true);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getCurrentUserWithdrawalBalance() {
+  const contract = getContract();
+  try {
+    const balance = await contract.getAddressToAmountFunded(accountAddress);
+    const balanceInETH = ethers.utils.formatEther(balance);
+    document.getElementById("contractBalanceText").innerHTML = balanceInETH;
+    if (balanceInETH > 0) {
+      document.getElementById("withdrawButton").removeAttribute("disabled");
+    } else {
+      document.getElementById("withdrawButton").setAttribute("disabled", true);
     }
   } catch (error) {
     console.error(error);
@@ -91,10 +114,7 @@ async function fund(event) {
     return;
   }
 
-  const provider = getProvider();
-  const signer = provider.getSigner(); // whichever wallet that is connected to the metamask
-  const contract = new ethers.Contract(contractAddress, abi, signer);
-
+  const contract = getContract();
   const fundButton = document.getElementById("fundButton");
   const fundLoader = document.getElementById("fundLoader");
 
@@ -109,7 +129,7 @@ async function fund(event) {
     });
     await listenForTransactionMine(transactionResponse, provider);
     alert(`You have funded the account successfully!`);
-    await Promise.all([getBalance(), getCurrentUserBalance()]);
+    await Promise.all(getCurrentUserBalances());
     document.getElementById("input-amount").value = "";
   } catch (error) {
     console.error(error);
@@ -126,7 +146,7 @@ async function withdraw() {
 
   const provider = getProvider();
   const signer = provider.getSigner(); // whichever wallet that is connected to the metamask
-  const contract = new ethers.Contract(contractAddress, abi, signer);
+  const contract = getContract();
 
   const withdrawButton = document.getElementById("withdrawButton");
   const withdrawLoader = document.getElementById("withdrawLoader");
@@ -139,7 +159,7 @@ async function withdraw() {
     const transactionResponse = await contract.withdraw();
     await listenForTransactionMine(transactionResponse, provider);
     alert("You have successfully withdrawn the funds!");
-    await Promise.all([getBalance(), getCurrentUserBalance()]);
+    await Promise.all(getCurrentUserBalances());
   } catch (error) {
     console.error(error);
   } finally {
@@ -154,7 +174,7 @@ async function getGasEstimation() {
 
   try {
     const gasPrice = await provider.getGasPrice();
-    const contract = new ethers.Contract(contractAddress, abi, signer);
+    const contract = getContract();
     const functionGasFeesForFund = await contract.estimateGas.fund({
       value: ethers.utils.parseEther("0.1"),
     });

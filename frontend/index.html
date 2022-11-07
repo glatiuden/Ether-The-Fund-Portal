@@ -37,47 +37,47 @@
 
     <main class="container my-5">
       <div class="form-section flex-fill">
-        <form id="form" method="POST">
-          <div class="card bg-dark">
-            <ul id="nav" class="nav nav-fill">
-              <li class="nav-item" role="presentation">
-                <a
-                  class="nav-link active tab-left-radius"
-                  aria-current="true"
-                  id="fund-tab"
-                  data-mdb-toggle="tab"
-                  href="#fund-tabs"
-                  aria-controls="fund-tabs"
-                  aria-selected="true"
-                >
-                  <i class="fas fa-exchange-alt me-2"></i>
-                  Fund
-                </a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a
-                  class="nav-link tab-right-radius"
-                  aria-current="true"
-                  id="receive-tab"
-                  data-mdb-toggle="tab"
-                  href="#receive-tabs"
-                  aria-controls="receive-tabs"
-                  aria-selected="false"
-                >
-                  <i class="fas fa-satellite-dish me-2"></i>
-                  Withdraw
-                </a>
-              </li>
-            </ul>
+        <div class="card bg-dark">
+          <ul id="nav" class="nav nav-fill">
+            <li class="nav-item" role="presentation">
+              <a
+                class="nav-link active tab-left-radius"
+                aria-current="true"
+                id="fund-tab"
+                data-mdb-toggle="tab"
+                href="#fund-tabs"
+                aria-controls="fund-tabs"
+                aria-selected="true"
+              >
+                <i class="fas fa-exchange-alt me-2"></i>
+                Fund
+              </a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a
+                class="nav-link tab-right-radius"
+                aria-current="true"
+                id="receive-tab"
+                data-mdb-toggle="tab"
+                href="#receive-tabs"
+                aria-controls="receive-tabs"
+                aria-selected="false"
+              >
+                <i class="fas fa-satellite-dish me-2"></i>
+                Withdraw
+              </a>
+            </li>
+          </ul>
 
-            <div class="card-body">
-              <div class="tab-content">
-                <div
-                  class="tab-pane fade show active"
-                  id="fund-tabs"
-                  role="tabpanel"
-                  aria-labelledby="fund-tab"
-                >
+          <div class="card-body">
+            <div class="tab-content">
+              <div
+                class="tab-pane fade show active"
+                id="fund-tabs"
+                role="tabpanel"
+                aria-labelledby="fund-tab"
+              >
+                <form id="form" method="POST">
                   <div class="text-center mb-2">
                     <small class="text-white fst-italic"
                       >Minimum Amount to Fund: $5 USD
@@ -141,32 +141,32 @@
                       </div>
                     </div>
                   </div>
-                </div>
-                <div
-                  class="tab-pane fade"
-                  id="receive-tabs"
-                  role="tabpanel"
-                  aria-labelledby="receive-tab"
-                >
-                  <div class="text-center text-white">
-                    <h4>Contract Balance</h4>
-                    <h6><span id="contractBalanceText">0</span> ETH</h6>
-                    <br />
-                    <div class="d-grid gap-2">
-                      <button
-                        id="withdrawButton"
-                        class="btn btn-primary rounded-5 block shadow-0"
-                        disabled
+                </form>
+              </div>
+              <div
+                class="tab-pane fade"
+                id="receive-tabs"
+                role="tabpanel"
+                aria-labelledby="receive-tab"
+              >
+                <div class="text-center text-white">
+                  <h4>Contract Balance</h4>
+                  <h6><span id="contractBalanceText">0</span> ETH</h6>
+                  <br />
+                  <div class="d-grid gap-2">
+                    <button
+                      id="withdrawButton"
+                      class="btn btn-primary rounded-5 block shadow-0"
+                      disabled
+                    >
+                      Withdraw ETH
+                    </button>
+                    <div id="withdrawLoader" class="text-center d-none">
+                      <div
+                        class="text-center spinner-border text-primary"
+                        role="status"
                       >
-                        Withdraw ETH
-                      </button>
-                      <div id="withdrawLoader" class="text-center d-none">
-                        <div
-                          class="text-center spinner-border text-primary"
-                          role="status"
-                        >
-                          <span class="visually-hidden">Loading...</span>
-                        </div>
+                        <span class="visually-hidden">Loading...</span>
                       </div>
                     </div>
                   </div>
@@ -174,9 +174,9 @@
               </div>
             </div>
           </div>
-        </form>
+        </div>
 
-        <div class="px-3">
+        <div class="mt-3 px-3">
           <div class="d-flex justify-content-between">
             <small>Exchange Rate:</small>
             <small class="text-white">

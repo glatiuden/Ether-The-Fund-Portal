@@ -110,6 +110,7 @@ async function fund(event) {
     await listenForTransactionMine(transactionResponse, provider);
     alert(`You have funded the account successfully!`);
     await Promise.all([getBalance(), getCurrentUserBalance()]);
+    document.getElementById("input-amount").value = "";
   } catch (error) {
     console.error(error);
   } finally {
